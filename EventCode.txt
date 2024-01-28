@@ -1,0 +1,88 @@
+function create_event_post_type() {
+    register_post_type('event',
+        array(
+            'labels' => array(
+                'name' => __('Events'),
+                'singular_name' => __('Event'),
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'supports' => array('title', 'editor', 'thumbnail', 'custom-fields'),
+        )
+    );
+}
+
+add_action('init', 'create_event_post_type');
+
+function add_event_meta_boxes() {
+    add_meta_box(
+        'event_category',
+        'Event Category',
+        'event_category_callback',
+        'event',
+        'side'
+    );
+
+    add_meta_box(
+        'event_images',
+        'Event Images',
+        'event_images_callback',
+        'event',
+        'normal'
+    );
+
+    add_meta_box(
+        'event_date',
+        'Event Date',
+        'event_date_callback',
+        'event',
+        'side'
+    );
+}
+
+function event_category_callback($post) {
+    $event_category = get_post_meta($post->ID, '_event_category', true);
+    echo '<label for="event_category">Event Category:</label>';
+    echo '<input type="text" id="event_category" name="event_category" value="' . esc_attr($event_category) . '">';
+}
+
+function event_images_callback($post) {
+    $event_images = get_post_meta($post->ID, '_event_images', true);
+    echo '<label for="event_images">Event Images (comma-separated URLs):</label>';
+    echo '<input type="text" id="event_images" name="event_images" value="' . esc_attr($event_images) . '">';
+}
+
+function event_date_callback($post) {
+    $event_date = get_post_meta($post->ID, '_event_date', true);
+    echo '<label for="event_date">Event Date:</label>';
+    echo '<input type="date" id="event_date" name="event_date" value="' . esc_attr($event_date) . '">';
+}
+
+function save_event_meta_data($post_id) {
+    if (array_key_exists('event_category', $_POST)) {
+        update_post_meta(
+            $post_id,
+            '_event_category',
+            sanitize_text_field($_POST['event_category'])
+        );
+    }
+
+    if (array_key_exists('event_images', $_POST)) {
+        update_post_meta(
+            $post_id,
+            '_event_images',
+            sanitize_text_field($_POST['event_images'])
+        );
+    }
+
+    if (array_key_exists('event_date', $_POST)) {
+        update_post_meta(
+            $post_id,
+            '_event_date',
+            sanitize_text_field($_POST['event_date'])
+        );
+    }
+}
+
+add_action('add_meta_boxes', 'add_event_meta_boxes');
+add_action('save_post', 'save_event_meta_data');
